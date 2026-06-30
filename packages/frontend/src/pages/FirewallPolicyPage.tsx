@@ -18,6 +18,7 @@ import type {
   InterfaceZone,
 } from "@fortisim/engine";
 import { evaluatePacket } from "@fortisim/engine";
+import { PacketTestModal } from "../components/policyObjects/PacketTestModal";
 import { getSubmissionFeedback } from "../api/client";
 import { ScenarioSession } from "../hooks/useScenarioSession";
 
@@ -51,6 +52,8 @@ export function FirewallPolicyPage({ session }: FirewallPolicyPageProps) {
   const [testResults, setTestResults] = useState<
     { packet: TestPacket; action: "ACCEPT" | "DENY"; matchedPolicyName: string | null }[]
   >([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTraces, setModalTraces] = useState<{ packet: TestPacket; trace: any[]; finalAction: "ACCEPT" | "DENY" }[]>([]);
 
   const [grading, setGrading] = useState(false);
   const [gradeReport, setGradeReport] = useState<any>(null);
@@ -125,6 +128,16 @@ export function FirewallPolicyPage({ session }: FirewallPolicyPageProps) {
       return { packet, action: result.finalAction, matchedPolicyName: matched ? matched.name : null };
     });
     setTestResults(results);
+  }
+
+  function runVisualPacketTest() {
+    if (!scenario) return;
+    const traces = scenario.testPackets.map((packet) => {
+      const result = evaluatePacket(packet, policies, addresses, services);
+      return { packet, trace: result.trace, finalAction: result.finalAction };
+    });
+    setModalTraces(traces);
+    setModalOpen(true);
   }
 
   async function submitForGrading() {
@@ -398,12 +411,20 @@ export function FirewallPolicyPage({ session }: FirewallPolicyPageProps) {
       <div className="bg-white border border-gray-200 rounded-md p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
           <div className="text-[13px] font-medium text-gray-700">Test Connectivity</div>
-          <button
-            onClick={runTestConnectivity}
-            className="px-3 py-1.5 border border-gray-300 rounded-sm text-[12.5px] text-gray-700 hover:bg-gray-50"
-          >
-            Run Test Packets
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={runTestConnectivity}
+              className="px-3 py-1.5 border border-gray-300 rounded-sm text-[12.5px] text-gray-700 hover:bg-gray-50"
+            >
+              Run Test Packets
+            </button>
+            <button
+              onClick={runVisualPacketTest}
+              className="px-3 py-1.5 bg-forti-red text-white rounded-sm text-[12.5px] hover:bg-forti-red/90"
+            >
+              Run Packet Test (Visual)
+            </button>
+          </div>
         </div>
         <p className="text-[11.5px] text-gray-400 mb-2">
           Runs instantly in your browser using the same matching logic as official grading.
