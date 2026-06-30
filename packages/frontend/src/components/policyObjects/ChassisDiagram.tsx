@@ -39,7 +39,7 @@ export function ChassisDiagram({ ports, onChange }: ChassisDiagramProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-            <span className="text-gray-300 text-[11px] font-mono font-medium">FortiGate-6000F</span>
+            <span className="text-gray-300 text-[11px] font-mono font-medium">FortiGate-600F</span>
           </div>
           <span className="text-gray-500 text-[10px] font-mono">SIMULATED</span>
         </div>

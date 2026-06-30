@@ -42,7 +42,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
           <div className="leading-tight">
             <div className="text-white font-semibold text-[13px]">FortiSim</div>
-            <div className="text-[11px] text-gray-400">FortiGate-6000F</div>
+            <div className="text-[11px] text-gray-400">FortiGate-600F</div>
           </div>
         </div>
 
