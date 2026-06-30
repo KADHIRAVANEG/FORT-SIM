@@ -49,33 +49,52 @@ explains *why* something is wrong without ever stating the correct value.
 
 ## Project structure
 
-```
-fortisim/
-├── docker-compose.yml
-├── package.json
-├── .gitignore
-│
-├── docs/
-│   ├── ARCHITECTURE.md       — end-to-end data flow, why answer keys never leak
-│   ├── SCENARIO_AUTHORING.md — how to write a new firewall policy scenario
-│   └── ROADMAP.md            — phase plan and what's deliberately out of scope
-│
-└── packages/
-├── engine/    — pure TypeScript: data model, matching logic, graders.
-│                No framework dependency. Shared by frontend (instant
-│                local "test connectivity") and backend (authoritative
-│                grading) so there is exactly one implementation of
-│                "how this is evaluated" anywhere in the system.
-│
-├── backend/   — Express API. The only place that holds scenario answer
-│                keys and the NVIDIA NIM API key. Grades submissions,
-│                proxies AI feedback requests with diagnostics only
-│                (never the correct answer).
-│
-└── frontend/  — React + Vite. The FortiOS-styled console students
-interact with: sidebar navigation, Firewall Policy /
-Addresses / Services pages, Network Interfaces page
-with the visual port-assignment chassis diagram.
+
+
+
+
+
+```mermaid
+flowchart TB
+    %% Styling Definitions
+    classDef frontend fill:#333,stroke:#666,stroke-width:2px,color:#fff;
+    classDef backend fill:#222,stroke:#444,stroke-width:2px,color:#fff;
+    classDef engine fill:#8e44ad,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef keys fill:#c0392b,stroke:#e74c3c,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
+    classDef external fill:#2980b9,stroke:#3498db,stroke-width:2px,color:#fff;
+    classDef process fill:#16a085,stroke:#2ecc71,stroke-width:2px,color:#fff;
+
+    subgraph FE [Frontend: React + Vite]
+        UI[FortiOS Console UI]:::frontend
+        LocEng[Local Engine Instance]:::engine
+    end
+
+    subgraph BE [Backend: Express API]
+        API[API Endpoints]:::backend
+        Eval(Evaluate):::process
+        Ret(Retrieve):::process
+        Diag(Request Diagnostics):::process
+        Key[(Answer Keys &<br/>NIM API Key)]:::keys
+        ServEng[Server Engine Instance]:::engine
+    end
+
+    subgraph EXT [External]
+        NIM[NVIDIA NIM AI Service]:::external
+    end
+
+    %% Flow Connections
+    UI -- User Submission --> API
+    UI -- Simulate --> LocEng
+    UI -- Result --> API
+    
+    API --> Eval
+    API --> Ret
+    API --> Diag
+    
+    Eval --> ServEng
+    Ret --> Key
+    Diag --> NIM
+    NIM -- Feedback --> API
 
 ```
 ## Running locally
