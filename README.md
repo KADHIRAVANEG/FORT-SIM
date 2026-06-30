@@ -12,7 +12,7 @@ web admin console.
 
 ## What students practice
 
-### Firewall Policy (5 scenarios)
+### Firewall Policy (5 scenarios) to learn
 Students configure firewall policies — source/destination addresses,
 services, actions, logging — and the engine runs a battery of simulated
 test packets against their configuration to verify the resulting traffic
