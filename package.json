@@ -1,0 +1,18 @@
+{
+  "name": "fortisim",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/engine",
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "engine:demo": "npm run demo --workspace=@fortisim/engine",
+    "backend:dev": "npm run dev --workspace=@fortisim/backend",
+    "frontend:dev": "npm run dev --workspace=@fortisim/frontend"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}
