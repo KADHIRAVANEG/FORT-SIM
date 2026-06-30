@@ -48,6 +48,8 @@ tutor (via NVIDIA NIM) gives conceptual, non-prescriptive feedback: it
 explains *why* something is wrong without ever stating the correct value.
 
 ## Project structure
+
+```
 fortisim/
 ├── docker-compose.yml
 ├── package.json
@@ -74,6 +76,8 @@ fortisim/
 interact with: sidebar navigation, Firewall Policy /
 Addresses / Services pages, Network Interfaces page
 with the visual port-assignment chassis diagram.
+
+```
 ## Running locally
 
 Requires Docker and Docker Compose.
@@ -84,6 +88,7 @@ cp packages/backend/.env.example packages/backend/.env
 
 docker compose up
 ```
+
 
 Frontend: http://localhost:5173
 Backend health check: http://localhost:4000/api/health
