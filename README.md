@@ -47,6 +47,54 @@ Every submission is graded immediately, and on a failed submission an AI
 tutor (via NVIDIA NIM) gives conceptual, non-prescriptive feedback: it
 explains *why* something is wrong without ever stating the correct value.
 
+
+## Objectives
+1. Simulate real-world firewall rule creation, ordering, and conflict resolution in a safe, sandboxed environment.
+2. Enable learners to configure inbound and outbound traffic policies using IP, port, and protocol-based rules.
+3. Visualise packet flow through firewall rule chains, showing which rule matched and why a packet was allowed or blocked.
+4. Provide immediate feedback on misconfigurations by highlighting shadowed rules, overlapping policies, and rule-order errors.
+5. Support multi-zone network topologies such as DMZ, LAN, and WAN so learners can practice enterprise-style segmentation concepts.
+6. Offer scenario-based challenges such as blocking all Telnet traffic or allowing only HTTPS to a web server, with automated grading.
+7. Run fully in Docker so no physical firewall hardware or cloud instance is required.
+
+## Problem statement, solution, and novelty
+
+### Problem 1: Limited access to firewall learning infrastructure
+**Issue:** Learning firewall configuration often requires expensive hardware such as Cisco ASA or FortiGate devices, or paid cloud virtual machines, which are inaccessible to many students.
+
+**How FORT-SIM overcomes it:** FORT-SIM runs entirely through Docker. A single `docker-compose up` command can launch a full simulated network environment at near-zero infrastructure cost.
+
+**What is new:** A TypeScript-based rule engine reproduces stateful packet inspection logic without depending on a kernel-level firewall module.
+
+### Problem 2: Existing simulators are hard to install and not web-friendly
+**Issue:** Tools such as Packet Tracer and GNS3 often involve heavier setup and are not ideal for quick, browser-based learning sessions.
+
+**How FORT-SIM overcomes it:** The system uses a monorepo architecture with shared `packages/` modules and a web UI, allowing learners to access the simulator through a local browser session without separate client installation.
+
+**What is new:** Shared TypeScript packages allow the same rule engine to be reused consistently across the UI, API, and test layers.
+
+### Problem 3: Firewall tools often do not explain blocked traffic clearly
+**Issue:** Learners frequently see packets blocked without understanding which rule matched, why the rule matched, or how ordering affected the result.
+
+**How FORT-SIM overcomes it:** The simulator traces each packet against the rule chain and displays the first matching rule, the action taken, and the reason in the interface.
+
+**What is new:** A step-by-step trace with diff-style highlighting shows which rules were skipped and which rule fired, making firewall decisions easier to debug.
+
+### Problem 4: Rule shadowing is difficult for beginners to detect
+**Issue:** A later rule may never be reached because an earlier rule already matches all relevant traffic, creating shadowed or redundant policies.
+
+**How FORT-SIM overcomes it:** The engine performs ruleset analysis whenever rules are edited and flags shadowed or redundant entries before packet simulation even begins.
+
+**What is new:** This behaves like a linter for firewall policies, providing proactive anomaly detection instead of reactive troubleshooting.
+
+### Problem 5: Multi-zone segmentation is usually taught only in theory
+**Issue:** Security courses often describe LAN, DMZ, and WAN segmentation conceptually, but learners rarely get practical experience configuring inter-zone policies.
+
+**How FORT-SIM overcomes it:** Docker Compose defines multiple virtual zones and hosts, enabling users to build policies across segmented networks and test zone-to-zone communication safely.
+
+**What is new:** A visual topology canvas shows zone-to-zone traffic status in real time with colour-coded results that change as rules are updated.
+
+
 ## Project structure
 
 
@@ -97,6 +145,41 @@ flowchart TB
     NIM -- Feedback --> API
 
 ```
+
+
+## Additional naming ideas
+
+### Fort / wall wordplay
+- RuleFort
+- WallCraft
+- BastionLab
+- Sentrynet
+
+### Packet / traffic themed
+- PacketForge
+- FlowGate
+- TrafficSentinel
+- GateKeeperX
+
+### Learning / sandbox themed
+- FireDrill
+- RuleRange
+- CyberMoat
+- PolicyForge
+
+### Short, brandable, acronym-style
+- ZoneIQ
+- RuleLens
+- NetSentry Sim
+- FireMesh
+
+### Distinct / abstract
+- Ironclad Lab
+- Perimetr
+- RuleForge Academy
+- ChokePoint
+
+---
 ## Running locally
 
 Requires Docker and Docker Compose.
