@@ -6,7 +6,7 @@ export interface NavItem {
 }
 
 export const NAV_STRUCTURE: NavItem[] = [
-  { label: "Dashboard", path: "/", icon: "dashboard" },
+  { label: "Tasks", path: "/", icon: "dashboard" },
   {
     label: "Policy & Objects",
     path: "/policy",
