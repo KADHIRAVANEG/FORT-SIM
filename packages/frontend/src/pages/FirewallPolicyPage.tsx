@@ -7,6 +7,7 @@ import type {
 } from "@fortisim/engine";
 import { evaluatePacket } from "@fortisim/engine";
 import { PacketFlowPanel } from "../components/policyObjects/PacketFlowPanel";
+import { NetworkTopology } from "../components/policyObjects/NetworkTopology";
 import { getSubmissionFeedback } from "../api/client";
 import { ScenarioSession } from "../hooks/useScenarioSession";
 
@@ -142,6 +143,9 @@ export function FirewallPolicyPage({ session }: FirewallPolicyPageProps) {
       });
       setGradeReport(report);
       setAiRemark(aiRemark);
+      if (report?.overallPassed) {
+        session.markTaskComplete(scenarioId);
+      }
     } catch (err: any) {
       setGradeError(err.message ?? "Grading request failed");
     } finally {
@@ -478,7 +482,8 @@ export function FirewallPolicyPage({ session }: FirewallPolicyPageProps) {
         </div>
       </div>
 
-      <div>
+      <div className="space-y-4">
+        <NetworkTopology addresses={addresses} />
         <PacketFlowPanel traces={flowTraces} />
       </div>
     </div>

@@ -1,12 +1,3 @@
-// ============================================================================
-// Unified Tasks landing page (new first page of the app). Lists every
-// exercise across all three tracks (Firewall Policy, Interfaces, Port
-// Assignment) as a single difficulty-ordered list. Clicking a firewall
-// policy task selects that scenario and navigates to Firewall Policy;
-// interface/port tasks navigate to the Interfaces page with the right
-// track pre-selected.
-// ============================================================================
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchScenarioList } from "../api/client";
@@ -22,7 +13,7 @@ interface TaskEntry {
   title: string;
   description: string;
   track: "policy" | "interface" | "port";
-  difficulty: number; // 1-5, lower = easier, used for ordering across tracks
+  difficulty: number;
 }
 
 export function TasksPage({ session }: TasksPageProps) {
@@ -43,10 +34,6 @@ export function TasksPage({ session }: TasksPageProps) {
     return <div className="text-gray-500 text-[12.5px]">Loading tasks…</div>;
   }
 
-  // Interleave tracks in a sensible difficulty progression: port assignment
-  // and interface basics first (foundational), then firewall policy tasks
-  // (which build on having a configured network), roughly ordered by the
-  // conceptual complexity each task's title/description implies.
   const tasks: TaskEntry[] = [
     { id: ALL_PORT_SCENARIOS[0].id, title: ALL_PORT_SCENARIOS[0].title, description: ALL_PORT_SCENARIOS[0].description, track: "port", difficulty: 1 },
     { id: ALL_INTERFACE_SCENARIOS[0].id, title: ALL_INTERFACE_SCENARIOS[0].title, description: ALL_INTERFACE_SCENARIOS[0].description, track: "interface", difficulty: 1 },
@@ -79,19 +66,21 @@ export function TasksPage({ session }: TasksPageProps) {
       session.selectScenario(task.id);
       navigate("/policy/firewall-policy");
     } else {
-      // Interfaces page reads its own scenario list internally; just
-      // navigate there. Query param signals which track/scenario to
-      // preselect, read by InterfacesPage.
       navigate(`/network/interfaces?track=${task.track}&scenario=${task.id}`);
     }
   }
 
+  const completedCount = tasks.filter((t) => session.completedTaskIds.has(t.id)).length;
+
   return (
     <div className="max-w-4xl">
       <h1 className="text-lg font-semibold text-forti-dark mb-1">Tasks</h1>
-      <p className="text-gray-500 text-[12.5px] mb-5">
+      <p className="text-gray-500 text-[12.5px] mb-1">
         All exercises, ordered from easiest to hardest. Complete them in any order — start with the basics
         if you're new to firewall configuration.
+      </p>
+      <p className="text-[12px] text-emerald-600 font-medium mb-5">
+        {completedCount} / {tasks.length} completed
       </p>
 
       <div className="space-y-2.5">

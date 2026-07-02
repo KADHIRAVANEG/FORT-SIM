@@ -1,19 +1,3 @@
-// ============================================================================
-// Shared scenario session state: holds which scenario is currently active,
-// fetches it from the backend, and holds the student's working copy of
-// addresses, services, and policies for that scenario. Lifted up to
-// App.tsx and passed down to every Policy & Objects page so they all read
-// and write the same in-memory data.
-//
-// Switching scenarios (selectScenario) intentionally resets the working
-// policy/address/service state -- mixing address/service IDs from one
-// scenario into another scenario's policies would silently break matching,
-// since IDs aren't guaranteed unique or meaningful across scenarios.
-//
-// State is in-memory only for Phase 1: refreshing the browser resets
-// progress. Persistence is a deliberate later phase.
-// ============================================================================
-
 import { useEffect, useState, Dispatch, SetStateAction, useCallback } from "react";
 import type { AddressObject, ServiceObject, FirewallPolicy, TestPacket } from "@fortisim/engine";
 import { fetchScenario } from "../api/client";
@@ -40,6 +24,8 @@ export interface ScenarioSession {
   setServices: Dispatch<SetStateAction<ServiceObject[]>>;
   setPolicies: Dispatch<SetStateAction<FirewallPolicy[]>>;
   selectScenario: (id: string) => void;
+  completedTaskIds: Set<string>;
+  markTaskComplete: (taskId: string) => void;
 }
 
 export function useScenarioSession(): ScenarioSession {
@@ -50,6 +36,8 @@ export function useScenarioSession(): ScenarioSession {
   const [addresses, setAddresses] = useState<AddressObject[]>([]);
   const [services, setServices] = useState<ServiceObject[]>([]);
   const [policies, setPolicies] = useState<FirewallPolicy[]>([]);
+
+  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +66,15 @@ export function useScenarioSession(): ScenarioSession {
     setScenarioId(id);
   }, []);
 
+  const markTaskComplete = useCallback((taskId: string) => {
+    setCompletedTaskIds((prev) => {
+      if (prev.has(taskId)) return prev;
+      const next = new Set(prev);
+      next.add(taskId);
+      return next;
+    });
+  }, []);
+
   return {
     scenarioId,
     scenario,
@@ -89,5 +86,7 @@ export function useScenarioSession(): ScenarioSession {
     setServices,
     setPolicies,
     selectScenario,
+    completedTaskIds,
+    markTaskComplete,
   };
 }
