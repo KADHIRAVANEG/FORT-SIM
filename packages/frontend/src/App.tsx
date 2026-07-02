@@ -18,7 +18,7 @@ export default function App() {
           <Route path="/policy/firewall-policy" element={<FirewallPolicyPage session={session} />} />
           <Route path="/policy/addresses" element={<AddressesPage session={session} />} />
           <Route path="/policy/services" element={<ServicesPage session={session} />} />
-          <Route path="/network/interfaces" element={<InterfacesPage />} />
+          <Route path="/network/interfaces" element={<InterfacesPage session={session} />} />
         </Routes>
       </AppShell>
     </BrowserRouter>
