@@ -3,11 +3,16 @@ import type { AdminAccess, InterfaceConfig, InterfaceGradingReport, PortGradingR
 import { ALL_INTERFACE_SCENARIOS, ALL_PORT_SCENARIOS } from "@fortisim/engine";
 import { ChassisDiagram } from "../components/policyObjects/ChassisDiagram";
 import type { PortZone, PortAssignment } from "../components/policyObjects/ChassisDiagram";
+import { ScenarioSession } from "../hooks/useScenarioSession";
 
 const ADMIN_ACCESS_OPTIONS: AdminAccess[] = ["PING", "HTTPS", "SSH", "HTTP"];
 type TrackType = "interface" | "port";
 
-export function InterfacesPage() {
+interface InterfacesPageProps {
+  session: ScenarioSession;
+}
+
+export function InterfacesPage({ session }: InterfacesPageProps) {
   const [track, setTrack] = useState<TrackType>("interface");
   const [activeIfaceScenarioId, setActiveIfaceScenarioId] = useState<string>(ALL_INTERFACE_SCENARIOS[0].id);
   const [interfaces, setInterfaces] = useState<InterfaceConfig[]>([]);
@@ -77,6 +82,9 @@ export function InterfacesPage() {
       const result = await res.json();
       setIfaceReport(result.report);
       setIfaceAiRemark(result.aiRemark ?? null);
+      if (result.report?.overallPassed) {
+        session.markTaskComplete(activeIfaceScenarioId);
+      }
     } catch (err: any) {
       setIfaceError(err.message ?? "Grading failed");
     } finally {
@@ -95,7 +103,11 @@ export function InterfacesPage() {
         body: JSON.stringify({ scenarioId: portScenario.id, assignments: portAssignments.map(({ portId, zone }) => ({ portId, zone })) }),
       });
       if (!res.ok) throw new Error("Grading request failed");
-      setPortReport(await res.json());
+      const result = await res.json();
+      setPortReport(result);
+      if (result?.overallPassed) {
+        session.markTaskComplete(portScenario.id);
+      }
     } catch (err: any) {
       setPortError(err.message ?? "Grading failed");
     } finally {
@@ -124,15 +136,18 @@ export function InterfacesPage() {
           <div className="bg-white border border-gray-200 rounded-md p-4 mb-5">
             <div className="text-[13px] font-medium text-gray-700 mb-3">Select Exercise</div>
             <div className="space-y-2">
-              {ALL_INTERFACE_SCENARIOS.map((s, idx) => (
-                <div key={s.id} onClick={() => setActiveIfaceScenarioId(s.id)} className={`flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors ${activeIfaceScenarioId === s.id ? "border-forti-red bg-red-50" : "border-gray-200 hover:bg-gray-50"}`}>
-                  <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 text-[11px] font-bold ${activeIfaceScenarioId === s.id ? "border-forti-red text-forti-red" : "border-gray-300 text-gray-400"}`}>{idx + 1}</div>
-                  <div>
-                    <div className="text-[13px] font-medium text-gray-800">{s.title}</div>
-                    <div className="text-[12px] text-gray-500 mt-0.5">{s.description}</div>
+              {ALL_INTERFACE_SCENARIOS.map((s, idx) => {
+                const completed = session.completedTaskIds.has(s.id);
+                return (
+                  <div key={s.id} onClick={() => setActiveIfaceScenarioId(s.id)} className={`flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors ${activeIfaceScenarioId === s.id ? "border-forti-red bg-red-50" : "border-gray-200 hover:bg-gray-50"}`}>
+                    <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 text-[11px] font-bold ${completed ? "bg-emerald-500 border-emerald-500 text-white" : activeIfaceScenarioId === s.id ? "border-forti-red text-forti-red" : "border-gray-300 text-gray-400"}`}>{completed ? "✓" : idx + 1}</div>
+                    <div>
+                      <div className="text-[13px] font-medium text-gray-800">{s.title}</div>
+                      <div className="text-[12px] text-gray-500 mt-0.5">{s.description}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -225,21 +240,24 @@ export function InterfacesPage() {
           <div className="bg-white border border-gray-200 rounded-md p-4 mb-5">
             <div className="text-[13px] font-medium text-gray-700 mb-3">Select Exercise</div>
             <div className="space-y-2">
-              {ALL_PORT_SCENARIOS.map((s, idx) => (
-                <div
-                  key={s.id}
-                  onClick={() => setActivePortScenarioId(s.id)}
-                  className={`flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors ${activePortScenarioId === s.id ? "border-forti-red bg-red-50" : "border-gray-200 hover:bg-gray-50"}`}
-                >
-                  <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 text-[11px] font-bold ${activePortScenarioId === s.id ? "border-forti-red text-forti-red" : "border-gray-300 text-gray-400"}`}>
-                    {idx + 1}
+              {ALL_PORT_SCENARIOS.map((s, idx) => {
+                const completed = session.completedTaskIds.has(s.id);
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => setActivePortScenarioId(s.id)}
+                    className={`flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors ${activePortScenarioId === s.id ? "border-forti-red bg-red-50" : "border-gray-200 hover:bg-gray-50"}`}
+                  >
+                    <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 text-[11px] font-bold ${completed ? "bg-emerald-500 border-emerald-500 text-white" : activePortScenarioId === s.id ? "border-forti-red text-forti-red" : "border-gray-300 text-gray-400"}`}>
+                      {completed ? "✓" : idx + 1}
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-medium text-gray-800">{s.title}</div>
+                      <div className="text-[12px] text-gray-500 mt-0.5">{s.description}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-[13px] font-medium text-gray-800">{s.title}</div>
-                    <div className="text-[12px] text-gray-500 mt-0.5">{s.description}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
